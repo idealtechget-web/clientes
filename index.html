@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Consultar Renovação - IdealTech</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { 
+      font-family: 'Segoe UI', system-ui, sans-serif; 
+      background: radial-gradient(circle at top, #111a2e 0%, #0a0f1d 100%); 
+      color: #ffffff; 
+      min-height: 100vh;
+      display: flex; 
+      justify-content: center; 
+      align-items: center;
+      padding: 20px; 
+    }
+    
+    /* Garante um único card centralizado */
+    .card-busca { 
+      background: #141d2d; 
+      width: 100%; 
+      max-width: 400px; 
+      padding: 30px; 
+      border-radius: 16px; 
+      border: 1px solid #1e2a3e; 
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+      text-align: center;
+    }
+
+    .logo { 
+      font-weight: 800; 
+      font-size: 1.8em; 
+      letter-spacing: 2px; 
+      color: #ffffff; 
+      margin-bottom: 2px; 
+    }
+    .logo span { color: #3b82f6; }
+    .sub-logo { 
+      font-size: 0.65em; 
+      letter-spacing: 4px; 
+      color: #64748b; 
+      margin-bottom: 25px; 
+      font-weight: 600; 
+      text-transform: uppercase; 
+    }
+    
+    h2 { font-size: 1.2em; color: #f1f5f9; margin-bottom: 8px; font-weight: 600; }
+    p { font-size: 0.85em; color: #94a3b8; margin-bottom: 20px; line-height: 1.4; }
+
+    input[type="text"] { 
+      width: 100%; 
+      padding: 14px; 
+      border-radius: 8px; 
+      border: 1px solid #28374d; 
+      background: #0d1524; 
+      color: #fff; 
+      font-size: 1.1em; 
+      outline: none; 
+      text-align: center;
+      letter-spacing: 2px;
+      margin-bottom: 15px;
+      transition: border-color 0.2s;
+    }
+    input[type="text"]:focus { border-color: #3b82f6; }
+
+    .btn { 
+      display: block; 
+      width: 100%; 
+      padding: 14px; 
+      background: #1e3a8a; 
+      color: #ffffff; 
+      font-weight: 700; 
+      font-size: 0.9em; 
+      border: 1px solid #3b82f6; 
+      border-radius: 8px; 
+      cursor: pointer; 
+      transition: all 0.2s; 
+      letter-spacing: 1px;
+    }
+    .btn:hover { background: #2563eb; border-color: #3b82f6; }
+    .erro-msg { color: #ef4444; font-size: 0.8em; margin-top: 12px; display: none; }
+  </style>
+</head>
+<body>
+
+<div class="card-busca">
+  <div class="logo">IDEAL<span>TECH</span></div>
+  <div class="sub-logo">RENOVAÇÃO DE ACESSO</div>
+
+  <h2>Consultar Usuário</h2>
+  <p>Digite seu código de usuário de assinatura para acessar seu painel de renovação.</p>
+
+  <input type="text" id="input-usuario" placeholder="Digite seu usuário" oninput="soNumeros(this)">
+  
+  <button class="btn" onclick="buscarRenovacao()">PESQUISAR</button>
+
+  <div id="msg-erro" class="erro-msg">Por favor, digite o código do seu usuário.</div>
+</div>
+
+<script>
+  function soNumeros(input) {
+    input.value = input.value.replace(/\D/g, '');
+  }
+
+  function buscarRenovacao() {
+    const usuario = document.getElementById('input-usuario').value.trim();
+    const msgErro = document.getElementById('msg-erro');
+
+    if (!usuario) {
+      msgErro.style.display = 'block';
+      return;
+    }
+
+    msgErro.style.display = 'none';
+    window.location.href = `./clientes/${usuario}.html`;
+  }
+
+  document.getElementById('input-usuario').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+      buscarRenovacao();
+    }
+  });
+</script>
+
+</body>
+</html>
