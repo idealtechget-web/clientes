@@ -17,7 +17,6 @@
       padding: 20px; 
     }
     
-    /* Garante um único card centralizado */
     .card-busca { 
       background: #141d2d; 
       width: 100%; 
@@ -80,6 +79,28 @@
       letter-spacing: 1px;
     }
     .btn:hover { background: #2563eb; border-color: #3b82f6; }
+    
+    /* Botão Voltar idêntico ao do Buscador de OS */
+    .btn-back {
+      display: inline-block;
+      width: 100%;
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #475569;
+      background-color: transparent;
+      color: #94a3b8;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-back:hover {
+      background-color: #334155;
+      color: #fff;
+      border-color: #64748b;
+    }
+
     .erro-msg { color: #ef4444; font-size: 0.8em; margin-top: 12px; display: none; }
   </style>
 </head>
@@ -97,6 +118,9 @@
   <button class="btn" onclick="buscarRenovacao()">PESQUISAR</button>
 
   <div id="msg-erro" class="erro-msg">Por favor, digite o código do seu usuário.</div>
+
+  <!-- Botão de Voltar ao Início -->
+  <a href="https://idealtech.srv.br" class="btn-back">← Voltar para o Início</a>
 </div>
 
 <script>
