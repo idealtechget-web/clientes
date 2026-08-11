@@ -3,7 +3,222 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Consultar Renovação - IdealTech</title>
+  <title>Gerador & Editor de Clientes - IdealTech</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { 
+      font-family: 'Segoe UI', system-ui, sans-serif; 
+      background: radial-gradient(circle at top, #111a2e 0%, #0a0f1d 100%); 
+      color: #e2e8f0; 
+      min-height: 100vh;
+      display: flex; 
+      justify-content: center; 
+      align-items: center;
+      padding: 20px; 
+    }
+    .container { 
+      background: #141d2d; 
+      width: 100%; 
+      max-width: 600px; 
+      padding: 30px; 
+      border-radius: 16px; 
+      border: 1px solid #1e2a3e; 
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+    }
+    h1 { text-align: center; color: #fff; font-size: 1.8em; margin-bottom: 2px; font-weight: 800; letter-spacing: 1px; }
+    h1 span { color: #3b82f6; }
+    p.sub { text-align: center; color: #64748b; font-size: 0.75em; margin-bottom: 25px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; }
+    
+    .btn-importar-box {
+      background: #0d1524;
+      border: 1px dashed #3b82f6;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+      margin-bottom: 25px;
+    }
+    .btn-importar-label {
+      color: #60a5fa;
+      font-weight: 700;
+      font-size: 0.85em;
+      cursor: pointer;
+      display: inline-block;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .btn-importar-label:hover { color: #93c5fd; }
+    #file-import { display: none; }
+
+    .form-group { margin-bottom: 18px; }
+    label { display: block; font-weight: 600; margin-bottom: 6px; color: #3b82f6; font-size: 0.8em; text-transform: uppercase; letter-spacing: 1px; }
+    input[type="text"], textarea { 
+      width: 100%; 
+      padding: 12px 14px; 
+      border-radius: 8px; 
+      border: 1px solid #28374d; 
+      background: #0d1524; 
+      color: #fff; 
+      font-size: 0.95em; 
+      outline: none; 
+      transition: border-color 0.2s;
+    }
+    input[type="text"]:focus, textarea:focus { border-color: #3b82f6; }
+    
+    /* Area de Cards Dinâmicos de Apps */
+    .app-card-item {
+      background: #0d1524;
+      border: 1px solid #28374d;
+      border-radius: 8px;
+      padding: 14px;
+      margin-bottom: 12px;
+      position: relative;
+    }
+    .app-card-item textarea { height: 80px; resize: vertical; font-family: monospace; font-size: 0.85em; margin-top: 8px; }
+    .btn-remover-card {
+      background: #ef4444;
+      color: #fff;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.7em;
+      font-weight: 700;
+      cursor: pointer;
+      float: right;
+    }
+
+    .btn-add-card {
+      background: #1e3a8a;
+      color: #fff;
+      border: 1px solid #3b82f6;
+      padding: 10px;
+      border-radius: 8px;
+      width: 100%;
+      font-weight: 700;
+      font-size: 0.8em;
+      cursor: pointer;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .btn-add-card:hover { background: #2563eb; }
+
+    .btn-gerar { 
+      width: 100%; 
+      padding: 14px; 
+      background: #233146; 
+      color: #fff; 
+      font-weight: 700; 
+      font-size: 0.9em; 
+      border: 1px solid #33435c; 
+      border-radius: 8px; 
+      cursor: pointer; 
+      transition: all 0.2s; 
+      letter-spacing: 1px; 
+    }
+    .btn-gerar:hover { background: #3b82f6; border-color: #3b82f6; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>IDEAL<span>TECH</span></h1>
+  <p class="sub">Hub de Soluções • Gerador & Editor de Clientes</p>
+
+  <!-- Botão de Importar para Editar -->
+  <div class="btn-importar-box">
+    <label for="file-import" class="btn-importar-label">📂 clique aqui para Importar e Editar um HTML Existente</label>
+    <input type="file" id="file-import" accept=".html" onchange="importarHTML(event)">
+  </div>
+
+  <div class="form-group">
+    <label for="usuario">1. Número de Usuário (Código):</label>
+    <input type="text" id="usuario" placeholder="Ex: 483514">
+  </div>
+
+  <div class="form-group">
+    <label for="nome">2. Nome Completo do Cliente:</label>
+    <input type="text" id="nome" placeholder="Ex: Zenilson Lacerda">
+  </div>
+
+  <div class="form-group">
+    <label for="plano">3. Plano Contratado:</label>
+    <input type="text" id="plano" placeholder="Ex: Plano Mensal - 2 Telas">
+  </div>
+
+  <div class="form-group">
+    <label>4. Aplicativos & Acessos (Cards):</label>
+    <div id="container-apps-cards"></div>
+    <button type="button" class="btn-add-card" onclick="adicionarCardApp()">+ Adicionar Aplicativo</button>
+  </div>
+
+  <div class="form-group">
+    <label for="link_renovacao">5. Link Direto do Painel de Renovação:</label>
+    <input type="text" id="link_renovacao" placeholder="Ex: https://painel-iptv.com/checkout/483514">
+  </div>
+
+  <button class="btn-gerar" onclick="gerarEBaixarHTML()">GERAR & BAIXAR HTML DO CLIENTE</button>
+</div>
+
+<script>
+  // Adiciona um card de aplicativo dinâmico
+  function adicionarCardApp(titulo = '', dados = '') {
+    const container = document.getElementById('container-apps-cards');
+    const div = document.createElement('div');
+    div.className = 'app-card-item';
+    div.innerHTML = `
+      <button type="button" class="btn-remover-card" onclick="this.parentElement.remove()">remover</button>
+      <input type="text" class="app-titulo" placeholder="Nome do Aplicativo (Ex: Blessed Player)" value="${titulo}">
+      <textarea class="app-dados" placeholder="Dados de acesso (Use *texto* para negrito)">${dados}</textarea>
+    `;
+    container.appendChild(div);
+  }
+
+  // Inicializa com 1 card por padrão
+  adicionarCardApp();
+
+  function formatarWhatsApp(texto) {
+    if (!texto) return '';
+    return texto.replace(/\*(.*?)\*/g, '<strong>$1</strong>');
+  }
+
+  function gerarEBaixarHTML() {
+    const usuario = document.getElementById('usuario').value.trim();
+    const nome = document.getElementById('nome').value.trim();
+    const plano = document.getElementById('plano').value.trim() || 'Plano Mensal';
+    const linkRenovacao = document.getElementById('link_renovacao').value.trim();
+
+    if (!usuario || !nome || !linkRenovacao) {
+      alert('Por favor, preencha Usuário, Nome e Link de Renovação!');
+      return;
+    }
+
+    // Coleta todos os cards de aplicativos
+    const appItems = document.querySelectorAll('.app-card-item');
+    let cardsHTML = '';
+    let cardsDataJSON = [];
+
+    appItems.forEach(item => {
+      const tit = item.querySelector('.app-titulo').value.trim();
+      const dad = item.querySelector('.app-dados').value.trim();
+      if (tit || dad) {
+        cardsDataJSON.push({ titulo: tit, dados: dad });
+        cardsHTML += `
+        <div class="app-card">
+          <div class="app-card-title">${tit}</div>
+          <div class="app-card-body">${formatarWhatsApp(dad)}</div>
+        </div>`;
+      }
+    });
+
+    // Modelo HTML do Cliente Final
+    const htmlCliente = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Renovação - ${nome}</title>
+  <!-- Meta de dados ocultos para re-importação no gerador -->
+  <meta name="idealtech-data" content='${JSON.stringify({usuario, nome, plano, linkRenovacao, cards: cardsDataJSON}).replace(/'/g, "&apos;")}'>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { 
@@ -16,136 +231,174 @@
       align-items: center;
       padding: 20px; 
     }
-    
-    .card-busca { 
+    .card { 
       background: #141d2d; 
       width: 100%; 
-      max-width: 400px; 
-      padding: 30px; 
+      max-width: 440px; 
+      padding: 30px 25px; 
       border-radius: 16px; 
       border: 1px solid #1e2a3e; 
       box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
-      text-align: center;
-    }
-
-    .logo { 
-      font-weight: 800; 
-      font-size: 1.8em; 
-      letter-spacing: 2px; 
-      color: #ffffff; 
-      margin-bottom: 2px; 
-    }
-    .logo span { color: #3b82f6; }
-    .sub-logo { 
-      font-size: 0.65em; 
-      letter-spacing: 4px; 
-      color: #64748b; 
-      margin-bottom: 25px; 
-      font-weight: 600; 
-      text-transform: uppercase; 
+      position: relative;
     }
     
-    h2 { font-size: 1.2em; color: #f1f5f9; margin-bottom: 8px; font-weight: 600; }
-    p { font-size: 0.85em; color: #94a3b8; margin-bottom: 20px; line-height: 1.4; }
-
-    input[type="text"] { 
-      width: 100%; 
-      padding: 14px; 
-      border-radius: 8px; 
-      border: 1px solid #28374d; 
-      background: #0d1524; 
-      color: #fff; 
-      font-size: 1.1em; 
-      outline: none; 
+    /* Indicador Visual de Rolagem */
+    .scroll-hint {
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid #3b82f6;
+      color: #60a5fa;
+      font-size: 0.75em;
+      font-weight: 700;
       text-align: center;
-      letter-spacing: 2px;
-      margin-bottom: 15px;
-      transition: border-color 0.2s;
+      padding: 8px;
+      border-radius: 30px;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      animation: pulse 1.8s infinite;
     }
-    input[type="text"]:focus { border-color: #3b82f6; }
 
-    .btn { 
+    @keyframes pulse {
+      0% { opacity: 0.6; transform: scale(0.98); }
+      50% { opacity: 1; transform: scale(1.02); }
+      100% { opacity: 0.6; transform: scale(0.98); }
+    }
+
+    /* Usuário e Nome GRANDES */
+    .badge-user { 
+      background: #0d1524; 
+      color: #3b82f6; 
+      padding: 14px; 
+      border-radius: 10px; 
+      font-family: monospace; 
+      font-size: 1.6em; 
+      font-weight: 800; 
+      text-align: center; 
+      border: 1px solid #233146; 
+      margin-bottom: 12px; 
+      letter-spacing: 2px; 
+    }
+    h2 { text-align: center; color: #ffffff; font-size: 1.5em; margin-bottom: 4px; font-weight: 700; }
+    .plano-tag { text-align: center; color: #94a3b8; font-size: 0.9em; margin-bottom: 25px; font-weight: 500; }
+    
+    /* Card do Aplicativo com Texto Grande */
+    .app-card {
+      background: #0d1524;
+      border: 1px solid #233146;
+      border-left: 4px solid #3b82f6;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 18px;
+    }
+    .app-card-title {
+      color: #3b82f6;
+      font-size: 1.1em;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #1e2a3e;
+      padding-bottom: 6px;
+    }
+    .app-card-body {
+      font-size: 1.1em; /* Tamanho Grande idêntico ao Nome */
+      color: #cbd5e1;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      font-family: monospace;
+    }
+    .app-card-body strong { color: #ffffff; font-weight: 700; }
+
+    .btn-renovar { 
       display: block; 
       width: 100%; 
-      padding: 14px; 
+      padding: 16px; 
       background: #1e3a8a; 
       color: #ffffff; 
-      font-weight: 700; 
-      font-size: 0.9em; 
-      border: 1px solid #3b82f6; 
+      font-weight: 800; 
+      text-align: center; 
       border-radius: 8px; 
-      cursor: pointer; 
+      text-decoration: none; 
+      font-size: 1em; 
+      border: 1px solid #3b82f6; 
       transition: all 0.2s; 
-      letter-spacing: 1px;
+      box-sizing: border-box; 
+      letter-spacing: 1px; 
+      margin-top: 10px;
     }
-    .btn:hover { background: #2563eb; border-color: #3b82f6; }
-    
-    /* Botão Voltar idêntico ao do Buscador de OS */
-    .btn-back {
-      display: inline-block;
-      width: 100%;
-      margin-top: 16px;
-      padding: 12px;
-      border-radius: 8px;
-      border: 1px solid #475569;
-      background-color: transparent;
-      color: #94a3b8;
-      font-size: 14px;
-      font-weight: 600;
-      text-decoration: none;
-      transition: all 0.2s;
-    }
-    .btn-back:hover {
-      background-color: #334155;
-      color: #fff;
-      border-color: #64748b;
-    }
-
-    .erro-msg { color: #ef4444; font-size: 0.8em; margin-top: 12px; display: none; }
+    .btn-renovar:hover { background: #2563eb; }
+    .rodape { text-align: center; color: #475569; font-size: 0.75em; margin-top: 25px; text-transform: uppercase; letter-spacing: 1px; }
   </style>
 </head>
 <body>
 
-<div class="card-busca">
-  <div class="logo">IDEAL<span>TECH</span></div>
-  <div class="sub-logo">RENOVAÇÃO DE ACESSO</div>
+<div class="card">
+  <div class="scroll-hint">↓ Role até o final para renovar seu plano</div>
 
-  <h2>Consultar Usuário</h2>
-  <p>Digite seu código de usuário de assinatura para acessar seu painel de renovação.</p>
+  <div class="badge-user">USUÁRIO: ${usuario}</div>
+  <h2>${nome}</h2>
+  <div class="plano-tag">Assinatura: ${plano}</div>
 
-  <input type="text" id="input-usuario" placeholder="Digite seu usuário" oninput="soNumeros(this)">
-  
-  <button class="btn" onclick="buscarRenovacao()">PESQUISAR</button>
+  ${cardsHTML}
 
-  <div id="msg-erro" class="erro-msg">Por favor, digite o código do seu usuário.</div>
+  <a class="btn-renovar" href="${linkRenovacao}">RENOVAR PLANO AGORA</a>
 
-  <!-- Botão de Voltar ao Início -->
-  <a href="https://idealtech.srv.br" class="btn-back">← Voltar para o Início</a>
+  <div class="rodape">IdealTech • Hub de Soluções</div>
 </div>
 
-<script>
-  function soNumeros(input) {
-    input.value = input.value.replace(/\D/g, '');
+</body>
+</html>`;
+
+    const blob = new Blob([htmlCliente], { type: 'text/html' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `${usuario}.html`;
+    a.click();
+    URL.revokeObjectURL(a.href);
   }
 
-  function buscarRenovacao() {
-    const usuario = document.getElementById('input-usuario').value.trim();
-    const msgErro = document.getElementById('msg-erro');
+  // Função para Importar e Editar HTMLs gerados por este sistema
+  function importarHTML(e) {
+    const file = e.target.files[0];
+    if (!file) return;
 
-    if (!usuario) {
-      msgErro.style.display = 'block';
-      return;
-    }
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      const content = evt.target.result;
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(content, 'text/html');
+      
+      const meta = doc.querySelector('meta[name="idealtech-data"]');
+      if (!meta) {
+        alert('Este arquivo HTML não possui os metadados de edição da IdealTech!');
+        return;
+      }
 
-    msgErro.style.display = 'none';
-    window.location.href = `./${usuario}.html`;
+      try {
+        const data = JSON.parse(meta.getAttribute('content'));
+        
+        document.getElementById('usuario').value = data.usuario || '';
+        document.getElementById('nome').value = data.nome || '';
+        document.getElementById('plano').value = data.plano || '';
+        document.getElementById('link_renovacao').value = data.linkRenovacao || '';
+
+        // Limpa cards atuais
+        document.getElementById('container-apps-cards').innerHTML = '';
+
+        // Carrega os cards do arquivo importado
+        if (data.cards && data.cards.length > 0) {
+          data.cards.forEach(c => adicionarCardApp(c.titulo, c.dados));
+        } else {
+          adicionarCardApp();
+        }
+
+        alert('Página importada com sucesso! Você já pode editar os dados.');
+      } catch (err) {
+        alert('Erro ao ler os dados do arquivo.');
+      }
+    };
+    reader.readAsText(file);
   }
-
-  document.getElementById('input-usuario').addEventListener('keypress', function (e) {
-    if (e.key === 'Enter') {
-      buscarRenovacao();
-    }
-  });
 </script>
 
 </body>
