@@ -219,7 +219,6 @@
 
   <div class="form-group">
     <label>4. Aplicativos & Acessos (Cards):</label>
-    <!-- Container onde os cards são soltos -->
     <div id="container-apps-cards"></div>
     <button type="button" class="btn-add-card" onclick="adicionarCardApp()">+ Adicionar App Manualmente</button>
   </div>
@@ -409,7 +408,7 @@
     }
   }
 
-  // ===== EXTRAÇÃO INTELIGENTE DE TEXTO =====
+  // ===== EXTRAÇÃO INTELIGENTE DE TEXTO (NOVA LÓGICA CORRIGIDA) =====
   function extrairDadosTexto() {
     const texto = document.getElementById('texto_input').value.trim();
     if (!texto) {
@@ -419,9 +418,12 @@
 
     let extraiuAlgo = false;
 
-    const renovaMatch = texto.match(/Renovar.*:[\s\S]*?(https?:\/\/[^\s]+)/i);
+    // 1. Extrair Link de Renovação (CORRIGIDO PARA NÃO SER GULOSO)
+    // O [\s\S]{0,150}? garante que o sistema só olhe as próximas 150 letras após a palavra Assinar/Renovar
+    const renovaMatch = texto.match(/(?:Assinar\/Renovar Plano|Renovar o Plano)[\s\S]{0,150}?(https?:\/\/[^\s]+)/i);
     if (renovaMatch) document.getElementById('link_renovacao').value = renovaMatch[1].trim();
 
+    // Limpar cards existentes se estiverem vazios
     const cardsAtuais = document.querySelectorAll('.app-card-item');
     cardsAtuais.forEach(c => {
         const tit = c.querySelector('.app-titulo').value;
@@ -429,15 +431,30 @@
         if(!tit && !dad) c.remove();
     });
 
-    const limitadores = "\\n\\s*\\*?Preencha|\\n\\s*\\*?URL|\\n\\s*\\*?DNS|\\n\\s*📱|\\n\\s*🟢|\\n\\s*🟡|\\n\\s*🔴|\\n\\s*📺|\\n\\s*👇|\\n\\s*💳|\\n\\s*\\*?EPG|\\n\\s*\\*?Aplicativos|\\n\\s*\\*?iPhone|\\n\\s*\\*?WebPlayer|$";
+    const limitadores = "\\n\\s*\\*?Preencha|\\n\\s*\\*?URL|\\n\\s*\\*?DNS|\\n\\s*📱|\\n\\s*📺|\\n\\s*👇|\\n\\s*💳|\\n\\s*\\*?EPG|\\n\\s*\\*?Aplicativos|\\n\\s*\\*?iPhone|\\n\\s*\\*?WebPlayer|\\n\\s*🟢|\\n\\s*🟡|\\n\\s*🔴|$";
 
+    // 2. EXTRAÇÃO DINÂMICA
+    const regexDinamico = new RegExp(`\\*?Preencha o (.*?)\\s+conforme abaixo:[^\\n]*\\n([\\s\\S]*?)(?=${limitadores})`, "gi");
+    let matchDinamico;
+    while ((matchDinamico = regexDinamico.exec(texto)) !== null) {
+        adicionarCardApp(matchDinamico[1].trim(), matchDinamico[2].trim());
+        extraiuAlgo = true;
+    }
+
+    // 3. Captura dos Dispositivos 
+    const regexDisp = new RegExp(`📺\\s*Dispositivos:\\s*([^\\n]+)`, "gi");
+    let mDisp;
+    const addedDisp = new Set();
+    while ((mDisp = regexDisp.exec(texto)) !== null) {
+        addedDisp.add(mDisp[1].trim());
+    }
+    if (addedDisp.size > 0) {
+        adicionarCardApp("Dispositivos Compatíveis", Array.from(addedDisp).join('\n'));
+        extraiuAlgo = true;
+    }
+
+    // 4. Captura dos Casos Específicos e Fora do Padrão
     const parsers = [
-      { titulo: "ABSOLUTO Player", regex: new RegExp(`\\*?Preencha o ABSOLUTO Player[^\\n]*\\n([\\s\\S]*?)(?=${limitadores})`, "i") },
-      { titulo: "ASSIST PLUS", regex: new RegExp(`\\*?Preencha o ASSIST PLUS[^\\n]*\\n([\\s\\S]*?)(?=${limitadores})`, "i") },
-      { titulo: "VIZZION PLAY", regex: new RegExp(`\\*?Preencha o VIZZION PLAY[^\\n]*\\n([\\s\\S]*?)(?=${limitadores})`, "i") },
-      { titulo: "OTTPLAYER", regex: new RegExp(`\\*?Preencha o OTTPLAYER[^\\n]*\\n([\\s\\S]*?)(?=${limitadores})`, "i") },
-      { titulo: "IPTV Smarters", regex: new RegExp(`\\*?Preencha o IPTV Smarters[^\\n]*\\n([\\s\\S]*?)(?=${limitadores})`, "i") },
-      { titulo: "XCIPTV", regex: new RegExp(`\\*?Preencha o XCIPTV[^\\n]*\\n([\\s\\S]*?)(?=${limitadores})`, "i") },
       { titulo: "EasyPlayer", regex: new RegExp(`\\*?EasyPlayer:\\*?\\n([\\s\\S]*?)(?=${limitadores})`, "i") },
       { titulo: "DNS STB / Smart UP", regex: new RegExp(`\\*?DNS PARA SMART STB[^\\n]*\\n([\\s\\S]*?)(?=${limitadores})`, "i") },
       { titulo: "DNS STB / Smart UP", regex: new RegExp(`\\*?DNS STB \/ Smart UP\\*?\\n([\\s\\S]*?)(?=${limitadores})`, "i") },
@@ -453,18 +470,6 @@
             extraiuAlgo = true;
         }
     });
-
-    const listas = [];
-    const regexListas = /(?:🟢|🟡|🔴)\s*\*?(.*?):\*?\s*\n?(http[^\s]+)/gi;
-    let mLista;
-    while ((mLista = regexListas.exec(texto)) !== null) {
-        listas.push(`*${mLista[1].trim()}:*\n${mLista[2].trim()}`);
-    }
-    
-    if (listas.length > 0) {
-        adicionarCardApp("Listas (M3U / HLS / SSIPTV)", listas.join('\n\n'));
-        extraiuAlgo = true;
-    }
 
     if(extraiuAlgo) {
         document.getElementById('texto_input').value = '';
@@ -519,7 +524,6 @@
     atualizarBotoesOrdenacao();
   }
 
-  // ===== TELA ACOMPANHANDO AS SETINHAS =====
   function moverCard(btn, direcao) {
     const card = btn.closest('.app-card-item');
     const container = card.parentNode;
@@ -530,9 +534,7 @@
       container.insertBefore(card.nextElementSibling, card);
     }
     
-    // Faz a tela rolar suavemente acompanhando o card
     card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
     card.style.transform = 'scale(0.98)';
     setTimeout(() => card.style.transform = 'scale(1)', 150);
     
