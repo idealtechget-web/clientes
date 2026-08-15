@@ -51,7 +51,7 @@
 
     .form-group { margin-bottom: 18px; }
     label { display: block; font-weight: 600; margin-bottom: 6px; color: #3b82f6; font-size: 0.8em; text-transform: uppercase; letter-spacing: 1px; }
-    input[type="text"], textarea { 
+    input[type="text"], input[type="tel"], textarea { 
       width: 100%; 
       padding: 12px 14px; 
       border-radius: 8px; 
@@ -62,9 +62,38 @@
       outline: none; 
       transition: border-color 0.2s;
     }
-    input[type="text"]:focus, textarea:focus { border-color: #3b82f6; }
+    input[type="text"]:focus, input[type="tel"]:focus, textarea:focus { border-color: #3b82f6; }
     
-    /* Area de Cards Dinâmicos de Apps */
+    .input-row { display: flex; gap: 15px; }
+    .input-row .form-group { flex: 1; margin-bottom: 15px; }
+
+    /* ===== ÁREA DE EXTRAÇÃO DE TEXTO ===== */
+    .m3u-box {
+      background: rgba(59, 130, 246, 0.05);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 25px;
+    }
+    .m3u-label { color: #93c5fd; display: flex; align-items: center; gap: 5px; font-weight: bold; font-size: 0.85em; margin-bottom: 8px;}
+    .m3u-box textarea { height: 90px; resize: vertical; font-size: 0.85em; margin-bottom: 8px;}
+    .btn-extrair {
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      padding: 12px;
+      border-radius: 6px;
+      width: 100%;
+      font-weight: 700;
+      font-size: 0.85em;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: background 0.2s;
+    }
+    .btn-extrair:hover { background: #1d4ed8; }
+
+    /* ===== Area de Cards Dinâmicos de Apps ===== */
     .app-card-item {
       background: #0d1524;
       border: 1px solid #28374d;
@@ -72,19 +101,56 @@
       padding: 14px;
       margin-bottom: 12px;
       position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: transform 0.2s, box-shadow 0.2s;
     }
-    .app-card-item textarea { height: 80px; resize: vertical; font-family: monospace; font-size: 0.85em; margin-top: 8px; }
-    .btn-remover-card {
-      background: #ef4444;
+    .app-card-item.dragging {
+      opacity: 0.5;
+      border: 2px dashed #3b82f6;
+      background: #0f172a;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+    .app-card-item textarea { height: 90px; resize: vertical; font-family: monospace; font-size: 0.85em; }
+    
+    /* Controles de Movimentação e Remoção */
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .drag-handle {
+      cursor: grab;
+      color: #64748b;
+      font-size: 1.4em;
+      padding: 0 10px 0 0;
+      user-select: none;
+    }
+    .drag-handle:active {
+      cursor: grabbing;
+      color: #3b82f6;
+    }
+    .card-actions {
+      display: flex;
+      gap: 6px;
+    }
+    .btn-mover, .btn-remover-card {
       color: #fff;
       border: none;
-      padding: 4px 8px;
+      padding: 4px 10px;
       border-radius: 4px;
-      font-size: 0.7em;
+      font-size: 0.75em;
       font-weight: 700;
       cursor: pointer;
-      float: right;
+      transition: opacity 0.2s;
     }
+    .btn-mover { background: #3b82f6; }
+    .btn-mover:hover { background: #2563eb; }
+    .btn-mover:disabled { background: #1e2a3e; color: #475569; cursor: not-allowed; }
+    
+    .btn-remover-card { background: #ef4444; }
+    .btn-remover-card:hover { background: #dc2626; }
 
     .btn-add-card {
       background: #1e3a8a;
@@ -124,31 +190,38 @@
   <h1>IDEAL<span>TECH</span></h1>
   <p class="sub">Hub de Soluções • Gerador & Editor de Clientes</p>
 
-  <!-- Botão de Importar para Editar -->
   <div class="btn-importar-box">
     <label for="file-import" class="btn-importar-label">📂 clique aqui para Importar e Editar um HTML Existente</label>
     <input type="file" id="file-import" accept=".html" onchange="importarHTML(event)">
   </div>
 
-  <div class="form-group">
-    <label for="usuario">1. Número de Usuário (Código):</label>
-    <input type="text" id="usuario" placeholder="Ex: 483514">
+  <div class="m3u-box">
+    <label for="texto_input" class="m3u-label">⚡ Extração Inteligente do Painel</label>
+    <textarea id="texto_input" placeholder="Cole a mensagem completa gerada pelo seu painel aqui..."></textarea>
+    <button type="button" class="btn-extrair" onclick="extrairDadosTexto()">🪄 Fatiar Mensagem e Criar Cards</button>
   </div>
 
   <div class="form-group">
-    <label for="nome">2. Nome Completo do Cliente:</label>
+    <label for="nome">1. Nome Completo do Cliente:</label>
     <input type="text" id="nome" placeholder="Ex: Zenilson Lacerda">
   </div>
 
-  <div class="form-group">
-    <label for="plano">3. Plano Contratado:</label>
-    <input type="text" id="plano" placeholder="Ex: Plano Mensal - 2 Telas">
+  <div class="input-row">
+    <div class="form-group">
+      <label for="telefone">2. Telefone / WhatsApp:</label>
+      <input type="tel" id="telefone" placeholder="Ex: 47 996315851" oninput="mascaraTelefoneEGerarCodigo(this)">
+    </div>
+    <div class="form-group">
+      <label for="usuario">3. Cód. Usuário (Gerado):</label>
+      <input type="text" id="usuario" placeholder="Ex: 475851" style="background: #111a2e; font-weight: bold; color: #93c5fd;">
+    </div>
   </div>
 
   <div class="form-group">
     <label>4. Aplicativos & Acessos (Cards):</label>
+    <!-- Container onde os cards são soltos -->
     <div id="container-apps-cards"></div>
-    <button type="button" class="btn-add-card" onclick="adicionarCardApp()">+ Adicionar Aplicativo</button>
+    <button type="button" class="btn-add-card" onclick="adicionarCardApp()">+ Adicionar App Manualmente</button>
   </div>
 
   <div class="form-group">
@@ -159,66 +232,17 @@
   <button class="btn-gerar" onclick="gerarEBaixarHTML()">GERAR & BAIXAR HTML DO CLIENTE</button>
 </div>
 
-<script>
-  // Adiciona um card de aplicativo dinâmico
-  function adicionarCardApp(titulo = '', dados = '') {
-    const container = document.getElementById('container-apps-cards');
-    const div = document.createElement('div');
-    div.className = 'app-card-item';
-    div.innerHTML = `
-      <button type="button" class="btn-remover-card" onclick="this.parentElement.remove()">remover</button>
-      <input type="text" class="app-titulo" placeholder="Nome do Aplicativo (Ex: Blessed Player)" value="${titulo}">
-      <textarea class="app-dados" placeholder="Dados de acesso (Use *texto* para negrito)">${dados}</textarea>
-    `;
-    container.appendChild(div);
-  }
-
-  // Inicializa com 1 card por padrão
-  adicionarCardApp();
-
-  function formatarWhatsApp(texto) {
-    if (!texto) return '';
-    return texto.replace(/\*(.*?)\*/g, '<strong>$1</strong>');
-  }
-
-  function gerarEBaixarHTML() {
-    const usuario = document.getElementById('usuario').value.trim();
-    const nome = document.getElementById('nome').value.trim();
-    const plano = document.getElementById('plano').value.trim() || 'Plano Mensal';
-    const linkRenovacao = document.getElementById('link_renovacao').value.trim();
-
-    if (!usuario || !nome || !linkRenovacao) {
-      alert('Por favor, preencha Usuário, Nome e Link de Renovação!');
-      return;
-    }
-
-    // Coleta todos os cards de aplicativos
-    const appItems = document.querySelectorAll('.app-card-item');
-    let cardsHTML = '';
-    let cardsDataJSON = [];
-
-    appItems.forEach(item => {
-      const tit = item.querySelector('.app-titulo').value.trim();
-      const dad = item.querySelector('.app-dados').value.trim();
-      if (tit || dad) {
-        cardsDataJSON.push({ titulo: tit, dados: dad });
-        cardsHTML += `
-        <div class="app-card">
-          <div class="app-card-title">${tit}</div>
-          <div class="app-card-body">${formatarWhatsApp(dad)}</div>
-        </div>`;
-      }
-    });
-
-    // Modelo HTML do Cliente Final
-    const htmlCliente = `<!DOCTYPE html>
+<!-- ======================================================= -->
+<!-- TEMPLATE INVISÍVEL DO CLIENTE                           -->
+<!-- ======================================================= -->
+<script type="text/template" id="template-cliente">
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Renovação - ${nome}</title>
-  <!-- Meta de dados ocultos para re-importação no gerador -->
-  <meta name="idealtech-data" content='${JSON.stringify({usuario, nome, plano, linkRenovacao, cards: cardsDataJSON}).replace(/'/g, "&apos;")}'>
+  <title>Renovação - {{NOME}}</title>
+  <meta name="idealtech-data" content='{{JSON_DATA}}'>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { 
@@ -241,8 +265,6 @@
       box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
       position: relative;
     }
-    
-    /* Indicador Visual de Rolagem */
     .scroll-hint {
       background: rgba(59, 130, 246, 0.15);
       border: 1px solid #3b82f6;
@@ -257,14 +279,11 @@
       letter-spacing: 1px;
       animation: pulse 1.8s infinite;
     }
-
     @keyframes pulse {
       0% { opacity: 0.6; transform: scale(0.98); }
       50% { opacity: 1; transform: scale(1.02); }
       100% { opacity: 0.6; transform: scale(0.98); }
     }
-
-    /* Usuário e Nome GRANDES */
     .badge-user { 
       background: #0d1524; 
       color: #3b82f6; 
@@ -275,13 +294,11 @@
       font-weight: 800; 
       text-align: center; 
       border: 1px solid #233146; 
-      margin-bottom: 12px; 
+      margin-bottom: 15px; 
       letter-spacing: 2px; 
     }
-    h2 { text-align: center; color: #ffffff; font-size: 1.5em; margin-bottom: 4px; font-weight: 700; }
-    .plano-tag { text-align: center; color: #94a3b8; font-size: 0.9em; margin-bottom: 25px; font-weight: 500; }
+    h2 { text-align: center; color: #ffffff; font-size: 1.6em; margin-bottom: 25px; font-weight: 700; }
     
-    /* Card do Aplicativo com Texto Grande */
     .app-card {
       background: #0d1524;
       border: 1px solid #233146;
@@ -301,14 +318,13 @@
       padding-bottom: 6px;
     }
     .app-card-body {
-      font-size: 1.1em; /* Tamanho Grande idêntico ao Nome */
+      font-size: 1.1em;
       color: #cbd5e1;
       line-height: 1.6;
       white-space: pre-wrap;
       font-family: monospace;
     }
     .app-card-body strong { color: #ffffff; font-weight: 700; }
-
     .btn-renovar { 
       display: block; 
       width: 100%; 
@@ -331,25 +347,254 @@
   </style>
 </head>
 <body>
-
 <div class="card">
   <div class="scroll-hint">↓ Role até o final para renovar seu plano</div>
-
-  <div class="badge-user">USUÁRIO: ${usuario}</div>
-  <h2>${nome}</h2>
-  <div class="plano-tag">Assinatura: ${plano}</div>
-
-  ${cardsHTML}
-
-  <a class="btn-renovar" href="${linkRenovacao}">RENOVAR PLANO AGORA</a>
-
+  <div class="badge-user">USUÁRIO: {{USUARIO}}</div>
+  <h2>{{NOME}}</h2>
+  
+  {{CARDS_HTML}}
+  
+  <a class="btn-renovar" href="{{LINK_RENOVACAO}}">RENOVAR PLANO AGORA</a>
   <div class="rodape">IdealTech • Hub de Soluções</div>
 </div>
-
 </body>
-</html>`;
+</html>
+</script>
 
-    const blob = new Blob([htmlCliente], { type: 'text/html' });
+<script>
+  // ===== LÓGICA DE ARRASTAR E SOLTAR (DRAG & DROP) =====
+  const containerApps = document.getElementById('container-apps-cards');
+
+  containerApps.addEventListener('dragover', e => {
+    e.preventDefault();
+    const afterElement = getDragAfterElement(containerApps, e.clientY);
+    const dragging = document.querySelector('.dragging');
+    if(dragging) {
+      if (afterElement == null) {
+        containerApps.appendChild(dragging);
+      } else {
+        containerApps.insertBefore(dragging, afterElement);
+      }
+    }
+  });
+
+  function getDragAfterElement(container, y) {
+    const draggableElements = [...container.querySelectorAll('.app-card-item:not(.dragging)')];
+    return draggableElements.reduce((closest, child) => {
+      const box = child.getBoundingClientRect();
+      const offset = y - box.top - box.height / 2;
+      if (offset < 0 && offset > closest.offset) {
+        return { offset: offset, element: child };
+      } else {
+        return closest;
+      }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+  }
+
+  // ===== GERAÇÃO AUTOMÁTICA DE CÓDIGO (DDD + 4 DÍGITOS) =====
+  function mascaraTelefoneEGerarCodigo(input) {
+    let nums = input.value.replace(/\D/g, '');
+    let formatado = nums;
+    if (nums.length > 2) formatado = `(${nums.substring(0,2)}) ${nums.substring(2)}`;
+    if (nums.length > 7) formatado = `(${nums.substring(0,2)}) ${nums.substring(2,7)}-${nums.substring(7,11)}`;
+    input.value = formatado;
+
+    const userInput = document.getElementById('usuario');
+    if (nums.length >= 10) {
+      const ddd = nums.substring(0, 2);
+      const ultimos4 = nums.substring(nums.length - 4);
+      userInput.value = ddd + ultimos4; 
+    } else {
+      userInput.value = ''; 
+    }
+  }
+
+  // ===== EXTRAÇÃO INTELIGENTE DE TEXTO =====
+  function extrairDadosTexto() {
+    const texto = document.getElementById('texto_input').value.trim();
+    if (!texto) {
+      alert('Cole o texto da mensagem do painel no campo indicado.');
+      return;
+    }
+
+    let extraiuAlgo = false;
+
+    const renovaMatch = texto.match(/Renovar.*:[\s\S]*?(https?:\/\/[^\s]+)/i);
+    if (renovaMatch) document.getElementById('link_renovacao').value = renovaMatch[1].trim();
+
+    const cardsAtuais = document.querySelectorAll('.app-card-item');
+    cardsAtuais.forEach(c => {
+        const tit = c.querySelector('.app-titulo').value;
+        const dad = c.querySelector('.app-dados').value;
+        if(!tit && !dad) c.remove();
+    });
+
+    const limitadores = "\\n\\s*\\*?Preencha|\\n\\s*\\*?URL|\\n\\s*\\*?DNS|\\n\\s*📱|\\n\\s*🟢|\\n\\s*🟡|\\n\\s*🔴|\\n\\s*📺|\\n\\s*👇|\\n\\s*💳|\\n\\s*\\*?EPG|\\n\\s*\\*?Aplicativos|\\n\\s*\\*?iPhone|\\n\\s*\\*?WebPlayer|$";
+
+    const parsers = [
+      { titulo: "ABSOLUTO Player", regex: new RegExp(`\\*?Preencha o ABSOLUTO Player[^\\n]*\\n([\\s\\S]*?)(?=${limitadores})`, "i") },
+      { titulo: "ASSIST PLUS", regex: new RegExp(`\\*?Preencha o ASSIST PLUS[^\\n]*\\n([\\s\\S]*?)(?=${limitadores})`, "i") },
+      { titulo: "VIZZION PLAY", regex: new RegExp(`\\*?Preencha o VIZZION PLAY[^\\n]*\\n([\\s\\S]*?)(?=${limitadores})`, "i") },
+      { titulo: "OTTPLAYER", regex: new RegExp(`\\*?Preencha o OTTPLAYER[^\\n]*\\n([\\s\\S]*?)(?=${limitadores})`, "i") },
+      { titulo: "IPTV Smarters", regex: new RegExp(`\\*?Preencha o IPTV Smarters[^\\n]*\\n([\\s\\S]*?)(?=${limitadores})`, "i") },
+      { titulo: "XCIPTV", regex: new RegExp(`\\*?Preencha o XCIPTV[^\\n]*\\n([\\s\\S]*?)(?=${limitadores})`, "i") },
+      { titulo: "EasyPlayer", regex: new RegExp(`\\*?EasyPlayer:\\*?\\n([\\s\\S]*?)(?=${limitadores})`, "i") },
+      { titulo: "DNS STB / Smart UP", regex: new RegExp(`\\*?DNS PARA SMART STB[^\\n]*\\n([\\s\\S]*?)(?=${limitadores})`, "i") },
+      { titulo: "DNS STB / Smart UP", regex: new RegExp(`\\*?DNS STB \/ Smart UP\\*?\\n([\\s\\S]*?)(?=${limitadores})`, "i") },
+      { titulo: "Celular Android (APPs)", regex: new RegExp(`\\*?Aplicativos Android:\\*?\\n([\\s\\S]*?)(?=${limitadores})`, "i") },
+      { titulo: "iPhone / iOS", regex: new RegExp(`\\*?iPhone\\/iOS:\\*?\\n([\\s\\S]*?)(?=${limitadores})`, "i") },
+      { titulo: "Webplayer", regex: new RegExp(`\\*?Webplayer:\\*?[^\\n]*\\n([\\s\\S]*?)(?=${limitadores})`, "i") }
+    ];
+
+    parsers.forEach(reg => {
+        const m = texto.match(reg.regex);
+        if (m && m[1].trim()) {
+            adicionarCardApp(reg.titulo, m[1].trim());
+            extraiuAlgo = true;
+        }
+    });
+
+    const listas = [];
+    const regexListas = /(?:🟢|🟡|🔴)\s*\*?(.*?):\*?\s*\n?(http[^\s]+)/gi;
+    let mLista;
+    while ((mLista = regexListas.exec(texto)) !== null) {
+        listas.push(`*${mLista[1].trim()}:*\n${mLista[2].trim()}`);
+    }
+    
+    if (listas.length > 0) {
+        adicionarCardApp("Listas (M3U / HLS / SSIPTV)", listas.join('\n\n'));
+        extraiuAlgo = true;
+    }
+
+    if(extraiuAlgo) {
+        document.getElementById('texto_input').value = '';
+        atualizarBotoesOrdenacao();
+    } else {
+        alert("Não foi possível extrair blocos automáticos. Verifique se copiou a mensagem do painel inteira.");
+    }
+  }
+
+  // ===== GESTÃO E ORDENAÇÃO DE CARDS =====
+  function adicionarCardApp(titulo = '', dados = '') {
+    const div = document.createElement('div');
+    div.className = 'app-card-item';
+    
+    div.innerHTML = `
+      <div class="card-header">
+        <div class="drag-handle" title="Segure e arraste para reordenar">☰</div>
+        <div class="card-actions">
+          <button type="button" class="btn-mover btn-up" onclick="moverCard(this, 'up')" title="Mover para Cima">▲</button>
+          <button type="button" class="btn-mover btn-down" onclick="moverCard(this, 'down')" title="Mover para Baixo">▼</button>
+          <button type="button" class="btn-remover-card" onclick="removerCard(this)" title="Remover Card">Remover</button>
+        </div>
+      </div>
+      <input type="text" class="app-titulo" placeholder="Nome do Aplicativo (Ex: Blessed Player)">
+      <textarea class="app-dados" placeholder="Dados de acesso (Use *texto* para negrito)"></textarea>
+    `;
+    
+    div.querySelector('.app-titulo').value = titulo;
+    div.querySelector('.app-dados').value = dados;
+    
+    // Configura eventos de arrastar
+    const handle = div.querySelector('.drag-handle');
+    handle.addEventListener('mouseenter', () => div.setAttribute('draggable', 'true'));
+    handle.addEventListener('mouseleave', () => div.removeAttribute('draggable'));
+
+    div.addEventListener('dragstart', () => {
+      div.classList.add('dragging');
+    });
+
+    div.addEventListener('dragend', () => {
+      div.classList.remove('dragging');
+      div.removeAttribute('draggable');
+      atualizarBotoesOrdenacao();
+    });
+
+    containerApps.appendChild(div);
+    atualizarBotoesOrdenacao();
+  }
+
+  function removerCard(btn) {
+    btn.closest('.app-card-item').remove();
+    atualizarBotoesOrdenacao();
+  }
+
+  // ===== TELA ACOMPANHANDO AS SETINHAS =====
+  function moverCard(btn, direcao) {
+    const card = btn.closest('.app-card-item');
+    const container = card.parentNode;
+    
+    if (direcao === 'up' && card.previousElementSibling) {
+      container.insertBefore(card, card.previousElementSibling);
+    } else if (direcao === 'down' && card.nextElementSibling) {
+      container.insertBefore(card.nextElementSibling, card);
+    }
+    
+    // Faz a tela rolar suavemente acompanhando o card
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    card.style.transform = 'scale(0.98)';
+    setTimeout(() => card.style.transform = 'scale(1)', 150);
+    
+    atualizarBotoesOrdenacao();
+  }
+
+  function atualizarBotoesOrdenacao() {
+    const cards = document.querySelectorAll('.app-card-item');
+    cards.forEach((card, index) => {
+      const btnUp = card.querySelector('.btn-up');
+      const btnDown = card.querySelector('.btn-down');
+      
+      btnUp.disabled = (index === 0);
+      btnDown.disabled = (index === cards.length - 1);
+    });
+  }
+
+  function formatarWhatsApp(texto) {
+    if (!texto) return '';
+    return texto.replace(/\*(.*?)\*/g, '<strong>$1</strong>');
+  }
+
+  // ===== GERAÇÃO E DOWNLOAD DO HTML =====
+  function gerarEBaixarHTML() {
+    const nome = document.getElementById('nome').value.trim();
+    const telefone = document.getElementById('telefone').value.trim();
+    const usuario = document.getElementById('usuario').value.trim();
+    const linkRenovacao = document.getElementById('link_renovacao').value.trim();
+
+    if (!usuario || !nome || !linkRenovacao) {
+      alert('Por favor, preencha o Telefone (para gerar o código do usuário), Nome e Link de Renovação!');
+      return;
+    }
+
+    const appItems = document.querySelectorAll('.app-card-item');
+    let cardsHTML = '';
+    let cardsDataJSON = [];
+
+    appItems.forEach(item => {
+      const tit = item.querySelector('.app-titulo').value.trim();
+      const dad = item.querySelector('.app-dados').value.trim();
+      if (tit || dad) {
+        cardsDataJSON.push({ titulo: tit, dados: dad });
+        cardsHTML += `
+        <div class="app-card">
+          <div class="app-card-title">${tit}</div>
+          <div class="app-card-body">${formatarWhatsApp(dad)}</div>
+        </div>`;
+      }
+    });
+
+    let template = document.getElementById('template-cliente').textContent;
+    const jsonData = JSON.stringify({usuario, nome, telefone, linkRenovacao, cards: cardsDataJSON}).replace(/'/g, "&apos;");
+
+    let htmlFinal = template
+      .replace(/{{NOME}}/g, nome)
+      .replace(/{{USUARIO}}/g, usuario)
+      .replace(/{{JSON_DATA}}/g, jsonData)
+      .replace(/{{CARDS_HTML}}/g, cardsHTML)
+      .replace(/{{LINK_RENOVACAO}}/g, linkRenovacao);
+
+    const blob = new Blob([htmlFinal], { type: 'text/html' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = `${usuario}.html`;
@@ -357,7 +602,7 @@
     URL.revokeObjectURL(a.href);
   }
 
-  // Função para Importar e Editar HTMLs gerados por este sistema
+  // ===== IMPORTAÇÃO DE HTML EXISTENTE =====
   function importarHTML(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -379,17 +624,15 @@
         
         document.getElementById('usuario').value = data.usuario || '';
         document.getElementById('nome').value = data.nome || '';
-        document.getElementById('plano').value = data.plano || '';
+        document.getElementById('telefone').value = data.telefone || '';
         document.getElementById('link_renovacao').value = data.linkRenovacao || '';
 
-        // Limpa cards atuais
         document.getElementById('container-apps-cards').innerHTML = '';
 
-        // Carrega os cards do arquivo importado
         if (data.cards && data.cards.length > 0) {
           data.cards.forEach(c => adicionarCardApp(c.titulo, c.dados));
         } else {
-          adicionarCardApp();
+            adicionarCardApp();
         }
 
         alert('Página importada com sucesso! Você já pode editar os dados.');
