@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Administrativo - IdealTech</title>
+  
+  <!-- Favicon com Emoji -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+
+  <style>
+    /* ===== VARIÁVEIS ===== */
+    :root {
+      --bg-card: #141d2d;
+      --bg-body: #0a0f1d;
+      --border-color: #1e2a3e;
+      --primary: #3b82f6;
+      --primary-dark: #2563eb;
+      --text-light: #cbd5e1;
+      --text-muted: #94a3b8;
+      --shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+      --radius: 16px;
+      --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ===== RESET E BASE ===== */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { 
+      font-family: 'Segoe UI', system-ui, sans-serif; 
+      background: radial-gradient(circle at top, #111a2e 0%, var(--bg-body) 100%); 
+      color: #fff; 
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: rgba(20, 29, 45, 0.85);
+      backdrop-filter: blur(10px);
+      width: 100%;
+      max-width: 800px;
+      padding: 50px 40px;
+      border-radius: var(--radius);
+      border: 1px solid rgba(30, 42, 62, 0.6);
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+
+    /* ===== CABEÇALHO ===== */
+    .logo-area { margin-bottom: 40px; }
+    .logo-area h1 { font-size: 2.5em; font-weight: 800; letter-spacing: 2px; color: #fff; margin-bottom: 5px; }
+    .logo-area h1 span { color: var(--primary); }
+    .logo-area p { color: var(--text-muted); font-size: 0.9em; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; }
+
+    /* ===== GRID DE MENU ===== */
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 25px;
+      margin-top: 20px;
+    }
+
+    .menu-card {
+      background: rgba(13, 21, 36, 0.6);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 35px 25px;
+      text-decoration: none;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .menu-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 4px;
+      background: var(--primary);
+      transform: scaleX(0);
+      transition: transform var(--transition);
+      transform-origin: left;
+    }
+
+    .menu-card:hover {
+      background: rgba(59, 130, 246, 0.08);
+      border-color: var(--primary);
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(59, 130, 246, 0.15);
+    }
+    
+    .menu-card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .card-icon {
+      font-size: 3.5em;
+      margin-bottom: 15px;
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+    }
+
+    .card-title {
+      font-size: 1.3em;
+      font-weight: 800;
+      color: var(--text-light);
+      margin-bottom: 10px;
+      letter-spacing: 1px;
+    }
+
+    .menu-card:hover .card-title { color: #fff; }
+
+    .card-desc {
+      font-size: 0.9em;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* ===== RODAPÉ ===== */
+    .footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      font-size: 0.8em;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 600;
+    }
+
+    @media (max-width: 600px) {
+      .container { padding: 40px 20px; }
+      .logo-area h1 { font-size: 2em; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="logo-area">
+    <h1>IDEAL<span>TECH</span></h1>
+    <p>Portal Administrativo</p>
+  </div>
+
+  <div class="menu-grid">
+    
+    <!-- CARD 1: DASHBOARD -->
+    <a href="dashboard_controle.html" class="menu-card">
+      <div class="card-icon">📊</div>
+      <h2 class="card-title">Dashboard de Gestão</h2>
+      <p class="card-desc">Controle sua base de clientes, pesquise usuários, faça backups e exporte relatórios.</p>
+    </a>
+
+    <!-- CARD 2: GERADOR -->
+    <a href="cadastro_de_clientes.html" class="menu-card">
+      <div class="card-icon">🪄</div>
+      <h2 class="card-title">Gerador de Clientes</h2>
+      <p class="card-desc">Fatie mensagens do painel, gere links de renovação e crie HTMLs de acesso automatizados.</p>
+    </a>
+
+  </div>
+
+  <div class="footer">
+    IdealTech • Hub de Soluções
+  </div>
+</div>
+
+</body>
+</html>
