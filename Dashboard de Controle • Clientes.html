@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard de Gestão - IdealTech</title>
+  
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpolygon points='128,20 236,82 236,174 128,236 20,174 20,82' fill='none' stroke='%23ffffff' stroke-width='24' stroke-linejoin='round'/%3E%3Crect x='70' y='76' width='26' height='104' fill='%23ffffff' rx='4'/%3E%3Crect x='110' y='76' width='76' height='26' fill='%23ffffff' rx='4'/%3E%3Crect x='135' y='102' width='26' height='78' fill='%23ffffff' rx='4'/%3E%3C/svg%3E">
+
+  <style>
+    /* ===== VARIÁVEIS ===== */
+    :root {
+      --bg-card: #141d2d;
+      --bg-body: #0a0f1d;
+      --border-color: #1e2a3e;
+      --primary: #3b82f6;
+      --primary-dark: #2563eb;
+      --text-light: #cbd5e1;
+      --text-muted: #94a3b8;
+      --bg-btn: #233146;
+      --bg-input: #0d1524;
+      --shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+      --radius: 12px;
+      --transition: 0.2s ease-in-out;
+    }
+
+    /* ===== RESET E BASE ===== */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { 
+      font-family: 'Segoe UI', system-ui, sans-serif; 
+      background: radial-gradient(circle at top, #111a2e 0%, var(--bg-body) 100%); 
+      color: #fff; 
+      min-height: 100vh;
+      padding: 30px 20px; 
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container { 
+      background: rgba(20, 29, 45, 0.85);
+      backdrop-filter: blur(10px);
+      width: 100%; 
+      max-width: 1200px; 
+      padding: 30px; 
+      border-radius: var(--radius); 
+      border: 1px solid rgba(30, 42, 62, 0.6); 
+      box-shadow: var(--shadow); 
+    }
+
+    /* ===== CABEÇALHO ===== */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 20px;
+      margin-bottom: 25px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    .logo-area h1 { font-size: 1.8em; font-weight: 800; letter-spacing: 1px; color: #fff; }
+    .logo-area h1 span { color: var(--primary); }
+    .logo-area p { color: var(--text-muted); font-size: 0.8em; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-top: 4px; }
+    
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    
+    .stats-card {
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      padding: 8px 16px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .stats-card .numero { font-size: 1.4em; font-weight: 800; color: var(--primary); }
+    .stats-card .label { font-size: 0.65em; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; }
+
+    /* Botões Padrão */
+    .btn {
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.85em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: var(--transition);
+      border: none;
+      color: #fff;
+    }
+    .btn-json-export { background: #4f46e5; border: 1px solid #4338ca; }
+    .btn-json-export:hover { background: #4338ca; }
+    
+    .btn-json-import { background: #0f172a; border: 1px dashed #4f46e5; color: #a5b4fc; }
+    .btn-json-import:hover { background: #1e1b4b; color: #fff; border-color: #6366f1; }
+
+    /* ===== ÁREA DE IMPORTAÇÃO HTML ===== */
+    .import-area {
+      background: rgba(13, 21, 36, 0.6);
+      border: 2px dashed var(--primary);
+      padding: 30px;
+      border-radius: var(--radius);
+      text-align: center;
+      margin-bottom: 25px;
+      transition: var(--transition);
+      cursor: pointer;
+      position: relative;
+    }
+    .import-area:hover, .import-area.dragover {
+      background: rgba(59, 130, 246, 0.1);
+      border-color: #60a5fa;
+    }
+    .import-area p { color: var(--text-light); font-size: 1em; font-weight: 600; margin-bottom: 10px; }
+    .import-area span { color: var(--text-muted); font-size: 0.85em; }
+    #file-upload, #json-upload { 
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; 
+    }
+
+    /* ===== BARRA DE FERRAMENTAS ===== */
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .search-box {
+      flex: 1;
+      min-width: 250px;
+      position: relative;
+    }
+    .search-box input {
+      width: 100%;
+      padding: 12px 15px 12px 40px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-input);
+      color: #fff;
+      font-size: 0.95em;
+      outline: none;
+      transition: var(--transition);
+    }
+    .search-box input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
+    .search-box::before {
+      content: '🔍';
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.1em;
+      opacity: 0.6;
+    }
+
+    .btn-exportar-excel { background: #064e3b; border: 1px solid #059669; }
+    .btn-exportar-excel:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(5, 150, 105, 0.3); }
+
+    /* ===== TABELA ===== */
+    .table-container {
+      overflow-x: auto;
+      background: var(--bg-input);
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th {
+      background: rgba(30, 42, 62, 0.8);
+      color: #60a5fa;
+      font-size: 0.8em;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 15px;
+      font-weight: 700;
+      border-bottom: 1px solid var(--border-color);
+      white-space: nowrap;
+    }
+    td {
+      padding: 15px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 0.95em;
+      color: var(--text-light);
+    }
+    tbody tr:hover { background: rgba(59, 130, 246, 0.05); }
+
+    .td-nome { font-weight: 700; color: #fff; display: block; margin-bottom: 4px; }
+    .td-telefone { font-size: 0.85em; color: var(--text-muted); }
+    
+    /* CÓDIGO AUMENTADO */
+    .badge-codigo {
+      background: #0f172a;
+      color: #60a5fa;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 1.3em; /* Aumentado */
+      font-weight: 900; /* Mais grosso */
+      border: 1px solid #3b82f6;
+      box-shadow: 0 0 10px rgba(59, 130, 246, 0.2);
+    }
+    
+    .tag-vencimento {
+      background: rgba(245, 158, 11, 0.1);
+      color: #fbbf24;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.85em;
+      font-weight: 600;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .link-group { display: flex; flex-direction: column; gap: 6px; font-size: 0.85em; }
+    .link-group a { color: var(--primary); text-decoration: none; font-weight: 600; }
+    .link-group a:hover { text-decoration: underline; }
+
+    .acoes { display: flex; gap: 6px; flex-wrap: wrap; }
+    .btn-acao {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: var(--text-light);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.8em;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-acao:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .btn-excluir:hover { background: #ef4444; border-color: #ef4444; color: #fff; }
+    .btn-regerar { background: rgba(59, 130, 246, 0.15); border-color: #3b82f6; color: #60a5fa; }
+    .btn-regerar:hover { background: #3b82f6; color: #fff; }
+
+    /* ===== MODAL DE EDIÇÃO ===== */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
+      display: none; justify-content: center; align-items: center; z-index: 1000;
+    }
+    .modal {
+      background: #141d2d; width: 100%; max-width: 500px;
+      padding: 25px; border-radius: 12px; border: 1px solid var(--border-color);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+    }
+    .modal h3 { color: #fff; margin-bottom: 20px; font-size: 1.4em; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+    .modal label { display: block; color: var(--primary); font-size: 0.8em; font-weight: 700; text-transform: uppercase; margin-bottom: 5px; margin-top: 15px; }
+    .modal input {
+      width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #28374d;
+      background: #0d1524; color: #fff; font-size: 1em; outline: none;
+    }
+    .modal input:focus { border-color: var(--primary); }
+    .modal-acoes { display: flex; gap: 10px; margin-top: 25px; justify-content: flex-end; }
+    .modal-btn-cancelar { background: transparent; border: 1px solid #475569; color: #cbd5e1; }
+    .modal-btn-salvar { background: var(--primary); border: 1px solid var(--primary); color: #fff; }
+
+    /* TOAST NOTIFICATION */
+    .toast {
+      position: fixed; bottom: 20px; right: 20px; background: #4ade80; color: #064e3b;
+      padding: 12px 24px; border-radius: 8px; font-weight: 700;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3); transform: translateY(100px); opacity: 0;
+      transition: all 0.3s ease; z-index: 2000; white-space: pre-line;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.erro { background: #ef4444; color: #fff; }
+    .toast.aviso { background: #f59e0b; color: #78350f; }
+
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="logo-area">
+      <h1>IDEAL<span>TECH</span></h1>
+      <p>Dashboard de Controle • Clientes</p>
+    </div>
+    
+    <div class="header-actions">
+      <div style="position: relative;">
+        <button class="btn btn-json-import">📂 Restaurar Backup (JSON)</button>
+        <input type="file" id="json-upload" accept=".json" onchange="importarJSON(event)">
+      </div>
+      <button class="btn btn-json-export" onclick="exportarJSON()">💾 Exportar Backup</button>
+      
+      <div class="stats-card">
+        <div class="numero" id="contador-clientes">0</div>
+        <div class="label">Clientes</div>
+      </div>
+    </div>
+  </header>
+
+  <section class="import-area" id="drop-zone">
+    <p>⚡ Arraste os arquivos HTML dos clientes para cá</p>
+    <span>Ou clique para selecionar vários arquivos (O sistema bloqueia duplicados)</span>
+    <input type="file" id="file-upload" multiple accept=".html">
+  </section>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Pesquisar por Nome, Código ou Telefone..." onkeyup="filtrarTabela()">
+    </div>
+    <button class="btn btn-exportar-excel" onclick="exportarCSV()">
+      📊 EXPORTAR EXCEL
+    </button>
+  </div>
+
+  <div class="table-container">
+    <table id="tabela-clientes">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Cliente</th>
+          <th>Vencimento</th>
+          <th>Acessos & Links</th>
+          <th>Ações Administrativas</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+        <!-- Renderizado via JS -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MODAL DE EDIÇÃO -->
+<div class="modal-overlay" id="modalEdicao">
+  <div class="modal">
+    <h3>Editar Cliente</h3>
+    <input type="hidden" id="edit-usuario">
+    
+    <label>Nome Completo</label>
+    <input type="text" id="edit-nome">
+    
+    <label>Telefone / WhatsApp</label>
+    <input type="text" id="edit-telefone" placeholder="(XX) XXXXX-XXXX">
+
+    <label>Data de Vencimento</label>
+    <input type="text" id="edit-vencimento" placeholder="Ex: 15/09/2026">
+
+    <label>Link de Renovação (Painel)</label>
+    <input type="text" id="edit-renovacao">
+
+    <label>Link de Cobrança Recorrente</label>
+    <input type="text" id="edit-recorrente" placeholder="Ex: https://link-de-assinatura.com">
+
+    <div class="modal-acoes">
+      <button class="btn modal-btn-cancelar" onclick="fecharModal()">Cancelar</button>
+      <button class="btn modal-btn-salvar" onclick="salvarEdicao()">Salvar Alterações</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast">Ação realizada!</div>
+
+<!-- ======================================================= -->
+<!-- TEMPLATE INVISÍVEL PARA REGERAR O HTML DO CLIENTE       -->
+<!-- ======================================================= -->
+<script type="text/template" id="template-cliente">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Renovação - {{NOME}}</title>
+  <meta name="idealtech-data" content='{{JSON_DATA}}'>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: radial-gradient(circle at top, #111a2e 0%, #0a0f1d 100%); color: #ffffff; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+    .card { background: #141d2d; width: 100%; max-width: 440px; padding: 30px 25px; border-radius: 16px; border: 1px solid #1e2a3e; box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative; }
+    .scroll-hint { background: rgba(59, 130, 246, 0.15); border: 1px solid #3b82f6; color: #60a5fa; font-size: 0.75em; font-weight: 700; text-align: center; padding: 8px; border-radius: 30px; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; animation: pulse 1.8s infinite; }
+    @keyframes pulse { 0% { opacity: 0.6; transform: scale(0.98); } 50% { opacity: 1; transform: scale(1.02); } 100% { opacity: 0.6; transform: scale(0.98); } }
+    .badge-user { background: #0d1524; color: #3b82f6; padding: 14px; border-radius: 10px; font-family: monospace; font-size: 1.6em; font-weight: 800; text-align: center; border: 1px solid #233146; margin-bottom: 15px; letter-spacing: 2px; }
+    h2 { text-align: center; color: #ffffff; font-size: 1.6em; margin-bottom: 25px; font-weight: 700; }
+    .app-card { background: #0d1524; border: 1px solid #233146; border-left: 4px solid #3b82f6; border-radius: 8px; padding: 16px; margin-bottom: 18px; }
+    .app-card-title { color: #3b82f6; font-size: 1.1em; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; border-bottom: 1px solid #1e2a3e; padding-bottom: 6px; }
+    .app-card-body { font-size: 1.1em; color: #cbd5e1; line-height: 1.6; white-space: pre-wrap; font-family: monospace; }
+    .app-card-body strong { color: #ffffff; font-weight: 700; }
+    .btn-renovar { display: block; width: 100%; padding: 16px; background: #1e3a8a; color: #ffffff; font-weight: 800; text-align: center; border-radius: 8px; text-decoration: none; font-size: 1em; border: 1px solid #3b82f6; transition: all 0.2s; box-sizing: border-box; letter-spacing: 1px; margin-top: 10px; }
+    .btn-renovar:hover { background: #2563eb; }
+    .rodape { text-align: center; color: #475569; font-size: 0.75em; margin-top: 25px; text-transform: uppercase; letter-spacing: 1px; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="scroll-hint">↓ Role até o final para renovar seu plano</div>
+  <div class="badge-user">USUÁRIO: {{USUARIO}}</div>
+  <h2>{{NOME}}</h2>
+  {{CARDS_HTML}}
+  <a class="btn-renovar" href="{{LINK_RENOVACAO}}">RENOVAR PLANO AGORA</a>
+  <div class="rodape">IdealTech • Hub de Soluções</div>
+</div>
+</body>
+</html>
+</script>
+
+<script>
+  let clientesData = []; 
+
+  // ===== ELEMENTOS =====
+  const fileUpload = document.getElementById('file-upload');
+  const dropZone = document.getElementById('drop-zone');
+  const tableBody = document.getElementById('tableBody');
+  const contador = document.getElementById('contador-clientes');
+  const searchInput = document.getElementById('searchInput');
+
+  // ===== EVENTOS DRAG & DROP HTML =====
+  fileUpload.addEventListener('change', handleFiles);
+  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault(); dropZone.classList.remove('dragover');
+    fileUpload.files = e.dataTransfer.files;
+    handleFiles({ target: fileUpload });
+  });
+
+  // ===== IMPORTAR HTML (LOTE) =====
+  async function handleFiles(e) {
+    const files = Array.from(e.target.files).filter(f => f.name.endsWith('.html'));
+    if (files.length === 0) return;
+
+    dropZone.innerHTML = `<p>⏳ Analisando ${files.length} arquivo(s)...</p>`;
+    
+    let importados = 0;
+    let ignorados = [];
+
+    const promessas = files.map(file => {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          const doc = new DOMParser().parseFromString(evt.target.result, 'text/html');
+          const meta = doc.querySelector('meta[name="idealtech-data"]');
+          if (meta) {
+            try {
+              const data = JSON.parse(meta.getAttribute('content'));
+              // Verifica duplicada pelo código (usuario)
+              if(!clientesData.some(c => c.usuario === data.usuario)) {
+                 clientesData.push(data);
+                 importados++;
+              } else {
+                 ignorados.push(data.usuario);
+              }
+            } catch (err) { console.error('Erro no parse do JSON'); }
+          }
+          resolve();
+        };
+        reader.readAsText(file);
+      });
+    });
+
+    await Promise.all(promessas);
+
+    dropZone.innerHTML = `<p>⚡ Importação Concluída!</p><span>Clique ou arraste novos arquivos aqui.</span>`;
+    fileUpload.value = ''; 
+    
+    atualizarTabela();
+    
+    if (ignorados.length > 0) {
+      alert(`⚠️ RESULTADO DA IMPORTAÇÃO:\n\n✔️ ${importados} Clientes Adicionados.\n\n❌ ${ignorados.length} Clientes Ignorados (Já cadastrados):\nCódigos: ${ignorados.join(', ')}`);
+      mostrarToast(`${importados} inseridos. ${ignorados.length} duplicados ignorados.`, 'aviso');
+    } else {
+      mostrarToast(`${importados} clientes carregados com sucesso!`);
+    }
+  }
+
+  // ===== RENDERIZAR TABELA =====
+  function atualizarTabela(dadosExibidos = clientesData) {
+    contador.textContent = clientesData.length;
+
+    if (dadosExibidos.length === 0) {
+      tableBody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><h3>Lista Vazia</h3><p>Importe HTMLs ou restaure um backup JSON.</p></div></td></tr>`;
+      return;
+    }
+
+    dadosExibidos.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+
+    let html = '';
+    dadosExibidos.forEach(c => {
+      html += `
+        <tr>
+          <td><span class="badge-codigo">${c.usuario || 'N/A'}</span></td>
+          <td>
+            <span class="td-nome">${c.nome || 'Sem Nome'}</span>
+            <span class="td-telefone">📱 ${c.telefone || 'Sem telefone'}</span>
+          </td>
+          <td>
+            ${c.vencimento ? `<span class="tag-vencimento">🗓️ ${c.vencimento}</span>` : '<span style="color:#64748b; font-size:0.85em;">Não definido</span>'}
+          </td>
+          <td>
+            <div class="link-group">
+              ${c.linkRenovacao ? `<a href="${c.linkRenovacao}" target="_blank">🟢 Renovação Painel</a>` : ''}
+              ${c.linkRecorrente ? `<a href="${c.linkRecorrente}" target="_blank">💳 Cobrança Recorrente</a>` : ''}
+            </div>
+          </td>
+          <td class="acoes">
+            <button class="btn-acao" onclick="abrirModal('${c.usuario}')" title="Editar Dados">✏️ Editar</button>
+            <button class="btn-acao btn-regerar" onclick="baixarHTMLAtualizado('${c.usuario}')" title="Gerar arquivo HTML atualizado">🔄 HTML</button>
+            <a class="btn-acao" href="https://wa.me/55${c.telefone ? c.telefone.replace(/\D/g, '') : ''}?text=Olá!%20Segue%20o%20link%20do%20seu%20painel:%20${c.linkRenovacao}" target="_blank">💬 Wpp</a>
+            <button class="btn-acao btn-excluir" onclick="excluirCliente('${c.usuario}')" title="Excluir do Sistema">🗑️</button>
+          </td>
+        </tr>
+      `;
+    });
+    tableBody.innerHTML = html;
+  }
+
+  function filtrarTabela() {
+    const t = searchInput.value.toLowerCase();
+    const filtrados = clientesData.filter(c => 
+      (c.nome || '').toLowerCase().includes(t) || 
+      (c.usuario || '').toLowerCase().includes(t) || 
+      (c.telefone || '').replace(/\D/g, '').includes(t)
+    );
+    atualizarTabela(filtrados);
+  }
+
+  // ===== FUNÇÕES ADMINISTRATIVAS =====
+  function excluirCliente(id) {
+    if(confirm(`⚠️ Tem certeza que deseja excluir o cliente código ${id} do seu controle?`)) {
+      clientesData = clientesData.filter(c => c.usuario !== id);
+      atualizarTabela();
+      mostrarToast('Cliente excluído.', 'erro');
+    }
+  }
+
+  // ===== EDIÇÃO DE CLIENTE (MODAL) =====
+  function abrirModal(id) {
+    const c = clientesData.find(x => x.usuario === id);
+    if(!c) return;
+    document.getElementById('edit-usuario').value = c.usuario;
+    document.getElementById('edit-nome').value = c.nome || '';
+    document.getElementById('edit-telefone').value = c.telefone || '';
+    document.getElementById('edit-vencimento').value = c.vencimento || '';
+    document.getElementById('edit-renovacao').value = c.linkRenovacao || '';
+    document.getElementById('edit-recorrente').value = c.linkRecorrente || '';
+    document.getElementById('modalEdicao').style.display = 'flex';
+  }
+
+  function fecharModal() {
+    document.getElementById('modalEdicao').style.display = 'none';
+  }
+
+  function salvarEdicao() {
+    const id = document.getElementById('edit-usuario').value;
+    const index = clientesData.findIndex(x => x.usuario === id);
+    if(index > -1) {
+      clientesData[index].nome = document.getElementById('edit-nome').value.trim();
+      clientesData[index].telefone = document.getElementById('edit-telefone').value.trim();
+      clientesData[index].vencimento = document.getElementById('edit-vencimento').value.trim();
+      clientesData[index].linkRenovacao = document.getElementById('edit-renovacao').value.trim();
+      clientesData[index].linkRecorrente = document.getElementById('edit-recorrente').value.trim();
+      
+      atualizarTabela();
+      fecharModal();
+      mostrarToast('Dados atualizados com sucesso!');
+    }
+  }
+
+  // ===== REGERAR E BAIXAR HTML =====
+  function formatarWhatsApp(texto) {
+    if (!texto) return '';
+    return texto.replace(/\*(.*?)\*/g, '<strong>$1</strong>');
+  }
+
+  function baixarHTMLAtualizado(id) {
+    const c = clientesData.find(x => x.usuario === id);
+    if(!c) return;
+
+    // Monta os cards
+    let cardsHTML = '';
+    if(c.cards && c.cards.length > 0) {
+      c.cards.forEach(card => {
+        cardsHTML += `<div class="app-card"><div class="app-card-title">${card.titulo}</div><div class="app-card-body">${formatarWhatsApp(card.dados)}</div></div>`;
+      });
+    }
+
+    // Prepara metadados para salvar as novas chaves (vencimento, recorrente) no arquivo
+    const jsonData = JSON.stringify(c).replace(/'/g, "&apos;");
+    const template = document.getElementById('template-cliente').textContent;
+
+    const htmlFinal = template
+      .replace(/{{NOME}}/g, c.nome || '')
+      .replace(/{{USUARIO}}/g, c.usuario || '')
+      .replace(/{{JSON_DATA}}/g, jsonData)
+      .replace(/{{CARDS_HTML}}/g, cardsHTML)
+      .replace(/{{LINK_RENOVACAO}}/g, c.linkRenovacao || '#');
+
+    const blob = new Blob([htmlFinal], { type: 'text/html' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `${c.usuario}.html`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    mostrarToast(`HTML do cliente ${c.usuario} gerado!`);
+  }
+
+  // ===== BACKUP EM JSON (EXPORTAR / IMPORTAR) =====
+  function exportarJSON() {
+    if(clientesData.length === 0) { alert('Nenhum dado para exportar.'); return; }
+    const dataStr = JSON.stringify(clientesData, null, 2);
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const dataAtual = new Date().toISOString().split('T')[0];
+    a.download = `idealtech_backup_${dataAtual}.json`;
+    a.click();
+    mostrarToast('Backup JSON exportado com sucesso!');
+  }
+
+  function importarJSON(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      try {
+        const data = JSON.parse(evt.target.result);
+        if(!Array.isArray(data)) throw new Error('Formato inválido');
+        
+        let importados = 0;
+        let ignorados = 0;
+        data.forEach(novoCliente => {
+          if(!clientesData.some(c => c.usuario === novoCliente.usuario)) {
+            clientesData.push(novoCliente);
+            importados++;
+          } else {
+            ignorados++;
+          }
+        });
+        document.getElementById('json-upload').value = '';
+        atualizarTabela();
+        alert(`Backup Restaurado:\n✔️ ${importados} importados\n❌ ${ignorados} ignorados (já existiam no sistema)`);
+      } catch(err) {
+        alert('Erro: O arquivo não é um backup JSON válido da IdealTech.');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  // ===== EXPORTAR PARA EXCEL (CSV) =====
+  function exportarCSV() {
+    if (clientesData.length === 0) { alert("Não há dados para exportar."); return; }
+    let csv = "Código;Nome;Telefone;Vencimento;Link Renovação;Link Recorrente\n";
+    clientesData.forEach(c => {
+      let cod = c.usuario ? c.usuario.replace(/"/g, '""') : '';
+      let nom = c.nome ? c.nome.replace(/"/g, '""') : '';
+      let tel = c.telefone ? c.telefone.replace(/"/g, '""') : '';
+      let ven = c.vencimento ? c.vencimento.replace(/"/g, '""') : '';
+      let ren = c.linkRenovacao ? c.linkRenovacao.replace(/"/g, '""') : '';
+      let rec = c.linkRecorrente ? c.linkRecorrente.replace(/"/g, '""') : '';
+      csv += `"${cod}";"${nom}";"${tel}";"${ven}";"${ren}";"${rec}"\n`;
+    });
+    const blob = new Blob(["\ufeff", csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `idealtech_tabela_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+  }
+
+  function mostrarToast(msg, tipo = 'sucesso') {
+    const t = document.getElementById('toast');
+    t.className = 'toast show ' + (tipo === 'erro' ? 'erro' : tipo === 'aviso' ? 'aviso' : '');
+    t.textContent = msg;
+    setTimeout(() => t.className = 'toast', 3500);
+  }
+</script>
+
+</body>
+</html>
